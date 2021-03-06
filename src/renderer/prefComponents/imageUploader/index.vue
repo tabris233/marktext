@@ -56,7 +56,7 @@
         <el-tab-pane label="PicGo" name="picgo">
           <div class="form-group">
               <div class="label">You need install
-                <span class="link" @click="openUrl(uploadServices.picgo.privacyUrl)">PicGo</span>
+                <span class="link" @click="open(uploadServices.picgo.privacyUrl)">PicGo</span>
               </div>
           </div>
           <div class="form-group">
@@ -131,11 +131,6 @@ export default {
     })
   },
   methods: {
-    openUrl (link) {
-      if (link) {
-        shell.openExternal(link)
-      }
-    },
     isValidUploaderService (name) {
       return isValidService(name)
     },

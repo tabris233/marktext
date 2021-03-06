@@ -43,7 +43,7 @@ const services = {
     privacyUrl: 'https://picgo.github.io/PicGo-Doc/',
 
     // Currently a non-persistent value
-    agreedToLegalNotices: false
+    agreedToLegalNotices: true
   }
 }
 
