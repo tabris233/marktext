@@ -35,6 +35,15 @@ const services = {
 
     // Currently a non-persistent value
     agreedToLegalNotices: false
+  },
+
+  picgo: {
+    name: 'PicGo',
+    isGdprCompliant: false,
+    privacyUrl: 'https://picgo.github.io/PicGo-Doc/',
+
+    // Currently a non-persistent value
+    agreedToLegalNotices: false
   }
 }
 

@@ -4,7 +4,7 @@ import { clipboard } from 'electron'
 import fs from 'fs-extra'
 import dayjs from 'dayjs'
 import Octokit from '@octokit/rest'
-import { ensureDirSync } from 'common/filesystem'
+import { ensureDirSync, isFile2 } from 'common/filesystem'
 import { isImageFile } from 'common/filesystem/paths'
 import { dataURItoBlob } from './index'
 import axios from '../axios'
@@ -90,6 +90,13 @@ export const moveImageToFolder = async (pathname, image, dir) => {
   }
 }
 
+export const deleteImageFile = async (imagePath) => {
+  console.log('deleteImageFile')
+  if (isFile2(imagePath)) {
+    await fs.remove(imagePath)
+  }
+}
+
 /**
  * @jocs todo, rewrite it use class
  */
@@ -128,8 +135,32 @@ export const uploadImage = async (pathname, image, preferences) => {
       re(res.data.data.url)
     })
       .catch(_ => {
-        rj('Upload failed, the image will be copied to the image folder')
+        rj('Upload Sm.ms failed, the image will be copied to the image folder')
       })
+  }
+
+  const uploadByPicGo = (imagePath) => {
+    console.log(`22 will upload image: ${imagePath}`)
+    const api = 'http://127.0.0.1:36677/upload'
+    return new Promise((resolve, reject) => {
+        axios({
+            method: 'post',
+            url: api,
+            data: {
+                list: [
+                    imagePath
+                ]
+            }
+        }).then((res) => {
+            console.log('this is PicGo upload response')
+            console.log(`${res}`)
+            console.log(`${res.data}`)
+            resolve(re(res.data.result[0]))
+        })
+        .catch(_ => {
+            rj('Upload PicGo failed, the image will be copied to the image folder')
+        })
+    })
   }
 
   const uploadByGithub = (content, filename) => {
@@ -154,7 +185,7 @@ export const uploadImage = async (pathname, image, preferences) => {
       re(result.data.content.download_url)
     })
       .catch(_ => {
-        rj('Upload failed, the image will be copied to the image folder')
+        rj('Upload GitHub failed, the image will be copied to the image folder')
       })
   }
 
@@ -175,6 +206,8 @@ export const uploadImage = async (pathname, image, preferences) => {
         const blobFile = new Blob([imageFile])
         if (currentUploader === 'smms') {
           uploadToSMMS(blobFile)
+        } else if (currentUploader === 'picgo') {
+          uploadByPicGo(imagePath)
         } else {
           const base64 = Buffer.from(imageFile).toString('base64')
           uploadByGithub(base64, path.basename(imagePath))
@@ -193,6 +226,9 @@ export const uploadImage = async (pathname, image, preferences) => {
         const blobFile = dataURItoBlob(reader.result, image.name)
         if (currentUploader === 'smms') {
           uploadToSMMS(blobFile)
+        } else if (currentUploader === 'picgo') {
+          const imagePath = await moveImageToFolder(pathname, image, '/tmp')
+          uploadByPicGo(imagePath).then(() => deleteImageFile(imagePath))
         } else {
           uploadByGithub(reader.result, image.name)
         }
